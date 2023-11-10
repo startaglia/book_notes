@@ -20,6 +20,10 @@ app.use(express.static("public"));
 async function getAllUsersData() {
     return db.query("SELECT * FROM users");
 }
+async function getClickedUser(userId) {
+    return db.query(
+        "SELECT * FROM users WHERE id = $1", [userId]);
+}
 
 app.get("/", async (req, res) => {
     const users = (await getAllUsersData()).rows;
@@ -62,12 +66,12 @@ app.post("/remove_user", async (req, res) => {
 })
 
 app.get("/user", async (req, res) => {
-    console.log()
     res.render("user.ejs");
 });
 app.post("/user", async (req, res) => {
     const users = (await getAllUsersData()).rows;
     const userId = req.body.user;
+    const clickedUser = (await getClickedUser(userId)).rows;
 
     if(req.body.add == "new"){
         res.redirect("/add_user");
@@ -82,8 +86,8 @@ app.post("/user", async (req, res) => {
                 "SELECT * FROM books WHERE user_id = $1", [userId]
                 );
                 res.render("user.ejs", {
-                    users:      users,
-                    data:       result.rows,
+                    user:       clickedUser,
+                    books:      result.rows,
                     id:         userId,
                 })
         } catch (err) {

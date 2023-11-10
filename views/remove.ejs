@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include("./partials/header.ejs") %>
+<body class= "d-flex align-items-center text-center vh-100" style="background-color:darkolivegreen">
+<div class="container-fluid mb-5">
+  <h1>Select the user to remove</h1>
+  <form action="/remove_user" method="post">
+    <% if(locals.users) {%>
+        <% users.forEach(user => { %>
+            <button type="submit" class="btn mb-5 mx-2" name="user" value="<%= (user.id)%>" id="<%= (user.id)%>" style="background-color: <%= user.color%>">
+                <%= user.name %>
+            </button>
+        <% }); %>
+    <% } %>
+  </form>
+</div>
+
+</body>
+
+</html>

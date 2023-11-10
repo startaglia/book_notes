@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include("./partials/header.ejs") %>
+<body style="background-color: cornflowerblue;">
+
+    <% if (locals.users) {%>
+        <h2>Lista libri di <%= users[id - 1].name %></h2>
+        <% data.forEach(book => { %>
+            <h2><%= book.name %></h2>
+        <% }) %>
+
+        <% } %>
+</body>
+</html>

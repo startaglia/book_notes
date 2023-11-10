@@ -1,13 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
     <%- include("./partials/header.ejs") %>
-<body style="background-color: cornflowerblue;">
-    <% if (locals.user) {%>
-        <h2>Lista libri di <%= user[0].name%> </h2>
-        <% books.forEach(book => { %>
-            <h2><%= book.name %></h2>
-        <% }) %>
+<style>
+    h2 span{
+        color: blueviolet;
+    }
+    .star-box{
+        color: white;
+        font-size: 1.5rem;
+    }
+    .gold {
+    color: gold;
+    }
+    .star {
+    cursor: pointer;
+    }
+</style>
+<body class="" style="background-color: cornflowerblue;">
+    <div class="d-flex flex-column justify-content-center align-items-center container-fluid mt-5">
+        <% if (locals.user) {%>
+            <h1 class="mb-5">Books read by<%= user[0].name%> </h1>
+            <% books.forEach(book => { %>
+                <div class="text-center mb-5 w-50">
+                    <h2><%= book.name %> <span class="d-block fs-6">Data</span></h2>
 
+                    <div class="float-md-start mr-3 me-3 mt-4">
+                        <img src="https://picsum.photos/200/300" class="" alt="..." style="width: 150px; height: 200px;">
+                        <div class="star-box">
+                            <span class="star">&#9733;</span>
+                            <span class="star">&#9733;</span>
+                            <span class="star">&#9733;</span>
+                            <span class="star">&#9733;</span>
+                            <span class="star">&#9733;</span>
+                        </div>
+                    </div>
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis expedita iusto libero temporibus voluptatum inventore nam unde laborum labore commodi, veritatis iure fuga modi dicta porro adipisci quos totam quo?Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti sunt voluptatum soluta quos pariatur tempore, similique voluptatem excepturi veniam vel deserunt sint voluptatibus hic voluptate, aliquam rem! Illum, impedit non. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Minus perspiciatis voluptatem et dignissimos, necessitatibus quidem tempore tenetur ullam minima cupiditate nulla, quam dolor! Dolore ipsa id quibusdam nisi, similique ratione. Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempora, cum. Sed temporibus magni, ut facere pariatur accusantium placeat error ratione rerum iste aliquid. Nisi dignissimos eius quod porro unde accusamus!
+                    </p>
+                </div>
+            <% }) %>
         <% } %>
+    </div>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const starContainers = document.querySelectorAll('.star-box');
+
+        starContainers.forEach((container, containerIndex) => {
+            const stars = container.querySelectorAll('.star');
+
+            stars.forEach((star, starIndex) => {
+                star.addEventListener('click', function() {
+                    stars.forEach((s, i) => {
+                        if (i <= starIndex) {
+                            s.classList.add('gold');
+                        } else {
+                            s.classList.remove('gold');
+                        }
+                    });
+                });
+            });
+        });
+    });
+</script>
 </html>

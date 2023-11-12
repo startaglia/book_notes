@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include("./partials/header.ejs") %>
+<body style="background-color: darkslateblue;">
+    <div class="d-flex flex-column align-items-center justify-content-center vh-100"">
+        <h1>Add new book</h1>
+        <div class="w-50 mb-5">
+            <form action="/add_book" method="post">
+                <h2 for="titolo">Title: </h2>
+                <input class="form-control form-control-sm mb-2" type="text" aria-label="title input" name="title" required>
+
+                <h2 for="genere">Genre:</h2>
+                <%- console.log(genre) %>
+                <input class="form-control form-control-sm mb-2" type="text" aria-label="genre input" name="genre" required>
+                <div class="d-flex justify-content-around">
+                    <h2 for="startDate">Start Date: </h2>
+                    <input class="form-control w-auto" type="date" name="startDate">
+                    <label for="todayStart">Today</label>
+                    <input type="checkbox" id="todayStart" name="todayStart">
+
+                    <h2 for="endDate">End Date:</h2>
+                    <input class="form-control w-auto" type="date" name="endDate">
+                    <label for="todayEnd">Today</label>
+                    <input type="checkbox" id="todayEnd" name="todayEnd">
+
+                </div>
+
+
+                <label for="terminato">Book finished: </label>
+                <input type="checkbox" id="terminato" name="terminato">
+
+                <button type="submit">Add</button>
+            </form>
+        </div>
+    <!-- </div> -->
+</body>
+
+</html>

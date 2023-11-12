@@ -41,7 +41,7 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/add_user", async (req, res) => {
-    res.render("add.ejs");
+    res.render("add_user.ejs");
 });
 app.post("/add_user", async (req, res) => {
     const name = req.body.name;
@@ -161,6 +161,13 @@ app.post("/genre", async (req, res) => {
         console.log(err);
     }
 })
+
+app.post("/add_book", async (req, res) => {
+    const genres = req.body.genres;
+    res.render("add_book.ejs", {
+        genres:      genres,
+    });
+});
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

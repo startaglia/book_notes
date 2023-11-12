@@ -24,6 +24,14 @@ async function getClickedUser(userId) {
     return db.query(
         "SELECT * FROM users WHERE id = $1", [userId]);
 }
+const genres = [
+    "All",
+    "Novel",
+    "Classics",
+    "Sci-Fi",
+    "Thriller",
+    "Fantasy"
+  ];
 
 app.get("/", async (req, res) => {
     const users = (await getAllUsersData()).rows;
@@ -61,7 +69,6 @@ app.post("/remove_user", async (req, res) => {
     } catch (err) {
         console.log(err);
     }
-    console.log(idSelected);
     res.redirect("/");
 })
 
@@ -83,14 +90,14 @@ app.post("/user", async (req, res) => {
     }
     else {
         try {
-            const result = await db.query(
-                "SELECT * FROM books WHERE user_id = $1 ORDER BY id ASC", [userId]
+            const books = await db.query(
+                "SELECT * FROM books WHERE user_id = $1  ORDER BY last_modified DESC", [userId]
                 );
                 res.render("user.ejs", {
                     user:       clickedUser,
-                    id:         userId,
-                    books:      result.rows,
+                    books:      books.rows,
                     stars:      stars.rows,
+                    genres:     genres,
                 })
         } catch (err) {
             console.log(err)
@@ -102,7 +109,6 @@ app.post("/rating", async (req, res) =>{
     const newStars = req.body.stars;
     const userId = req.body.id;
     const bookId = req.body.bookid;
-    console.log(bookId);
     const clickedUser = (await getClickedUser(userId)).rows;
     try {
         await db.query(
@@ -113,14 +119,48 @@ app.post("/rating", async (req, res) =>{
             "SELECT * FROM books WHERE user_id = $1 ORDER BY last_modified DESC", [userId]);
         res.render("user.ejs", {
             user:       clickedUser,
-            id:         userId,
             books:      books.rows,
             stars:      stars.rows,
+            genres:     genres,
+
         });
     } catch (err) {
         console.log(err);
     }
 });
+
+app.post("/genre", async (req, res) => {
+    const newStars = req.body.stars;
+    const userId = req.body.id;
+    const bookId = req.body.bookid;
+    const genre = req.body.genre;
+    let books;
+    console.log(genre);
+    const clickedUser = (await getClickedUser(userId)).rows;
+    console.log(userId);
+
+    try {
+        await db.query(
+            "UPDATE books SET stars = $1, last_modified = CURRENT_TIMESTAMP WHERE user_id = $2 AND id = $3", [newStars, userId, bookId]);
+        const stars = await db.query(
+            "SELECT stars FROM books WHERE user_id = $1", [userId]);
+        if(genre === "All") {
+            books = await db.query(
+                "SELECT * FROM books WHERE user_id = $1 ORDER BY last_modified DESC", [userId]);
+        } else {
+            books = await db.query(
+                "SELECT * FROM books WHERE user_id = $1 AND genre = $2 ORDER BY last_modified DESC", [userId, genre]);
+        }
+        res.render("user.ejs", {
+            user:       clickedUser,
+            books:      books.rows,
+            stars:      stars.rows,
+            genres:     genres,
+        });
+    } catch (err) {
+        console.log(err);
+    }
+})
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

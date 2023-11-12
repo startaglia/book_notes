@@ -30,7 +30,16 @@
     <div class="d-flex flex-column justify-content-center align-items-center container-fluid mt-5">
         <a href="/" class="btn btn-secondary align-self-start ms-5"> &larr; Back </a>
         <% if (locals.user) {%>
-            <h1 class="mb-5">Books read by <%= user[0].name%> </h1>
+            <h2>Genres: </h2>
+            <div class="d-inline mb-5">
+                <% genres.forEach(genre => { %>
+                    <form action="/genre" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="<%= user[0].id %>">
+                        <button type="submit" class="btn btn-secondary" name="genre" value="<%= genre %>"> <%= genre %></button>
+                    </form>
+                    <% }) %>
+                </div>
+            <h1 class="mb-2">Books read by <%= user[0].name%> </h1>
             <% books.forEach((book, indx) => { %>
                 <div class="text-center mb-5 w-50">
                     <h2><%= book.name %> <span class="d-block fs-6">Data</span></h2>
@@ -39,7 +48,7 @@
                         <div class="star-box" data-index="<%= indx %>">
                             <% for(let i = 0; i < 5; i++ ) { %>
                                 <form action="/rating" method="post" class="d-inline">
-                                    <input type="hidden" name="id" value="<%= id %>">
+                                    <input type="hidden" name="id" value="<%= user[0].id %>">
                                     <input type="hidden" name="bookid" value="<%= book.id %>">
 
                                     <button type="submit" class="star no-style" name="stars" value= "<%= i + 1 %>" data-star-index="<%= i %>" data-initial-star="<%= book.stars %>">&#9733;</button>

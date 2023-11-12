@@ -10,28 +10,41 @@
         font-size: 1.5rem;
     }
     .gold {
-    color: gold;
+    color: gold !important;
+    cursor: pointer;
     }
     .star {
     cursor: pointer;
+    color: white;
     }
+    .no-style {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    outline: none; /* Rimuovi il bordo quando il bottone è selezionato */
+}
 </style>
-<body class="" style="background-color: cornflowerblue;">
+<body style="background-color: cornflowerblue;">
     <div class="d-flex flex-column justify-content-center align-items-center container-fluid mt-5">
+        <a href="/" class="btn btn-secondary align-self-start ms-5"> &larr; Back </a>
         <% if (locals.user) {%>
-            <h1 class="mb-5">Books read by<%= user[0].name%> </h1>
-            <% books.forEach(book => { %>
+            <h1 class="mb-5">Books read by <%= user[0].name%> </h1>
+            <% books.forEach((book, indx) => { %>
                 <div class="text-center mb-5 w-50">
                     <h2><%= book.name %> <span class="d-block fs-6">Data</span></h2>
-
                     <div class="float-md-start mr-3 me-3 mt-4">
-                        <img src="https://picsum.photos/200/300" class="" alt="..." style="width: 150px; height: 200px;">
-                        <div class="star-box">
-                            <span class="star">&#9733;</span>
-                            <span class="star">&#9733;</span>
-                            <span class="star">&#9733;</span>
-                            <span class="star">&#9733;</span>
-                            <span class="star">&#9733;</span>
+                        <img src="https://picsum.photos/200/300" class="" alt="book cover img" style="width: 150px; height: 200px;">
+                        <div class="star-box" data-index="<%= indx %>">
+                            <% for(let i = 0; i < 5; i++ ) { %>
+                                <form action="/rating" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="<%= id %>">
+                                    <input type="hidden" name="bookid" value="<%= book.id %>">
+
+                                    <button type="submit" class="star no-style" name="stars" value= "<%= i + 1 %>" data-star-index="<%= i %>" data-initial-star="<%= book.stars %>">&#9733;</button>
+                                </form>
+                            <% } %>
                         </div>
                     </div>
                     <p>
@@ -42,25 +55,96 @@
         <% } %>
     </div>
 </body>
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const starContainers = document.querySelectorAll('.star-box');
+    const starContainers = document.querySelectorAll('.star-box');
+    // Itera sui contenitori di stelle (libri)
+    starContainers.forEach((container, containerIndex) => {
+        // Seleziona le stelle all'interno del contenitore corrente
+        const stars = container.querySelectorAll('.star');
 
-        starContainers.forEach((container, containerIndex) => {
-            const stars = container.querySelectorAll('.star');
+        // Itera sulle stelle del contenitore corrente
+        stars.forEach((star, starIndex) => {
+            // 10 è la specifica della base numerica quando si utilizza parseInt
+            const valueInStar = parseInt(star.dataset.initialStar, 10);
+            // Aggiunge la classe 'gold' se l'indice è inferiore al valore iniziale delle stelle
+            star.classList.toggle('gold', !isNaN(valueInStar) && starIndex < valueInStar);
+        });
 
-            stars.forEach((star, starIndex) => {
-                star.addEventListener('click', function() {
-                    stars.forEach((s, i) => {
-                        if (i <= starIndex) {
-                            s.classList.add('gold');
-                        } else {
-                            s.classList.remove('gold');
-                        }
-                    });
-                });
+        // Aggiunge un listener per l'evento click su ogni stella
+        stars.forEach((star) => {
+            star.addEventListener('click', function() {
+                const starIndex = parseInt(star.dataset.starIndex, 10);
+                // Aggiorna dinamicamente il colore delle stelle
+                updateStarsColor(starContainers, containerIndex, starIndex);
             });
         });
     });
-</script>
+    // Funzione per aggiornare dinamicamente il colore delle stelle
+    function updateStarsColor(containers, containerIndex, selectedStarIndex) {
+        const container = containers[containerIndex];
+        const stars = container.querySelectorAll('.star');
+
+        // Itera sulle stelle del contenitore corrente
+        stars.forEach((star, starIndex) => {
+            // Aggiunge la classe 'gold' se l'indice è inferiore o uguale all'indice selezionato
+            star.classList.toggle('gold', starIndex <= selectedStarIndex);
+        });
+    }
+});
+ </script>
+ <!-- //     // evento che inizia quando il DOM ha finito di caricare tutto
+ //     document.addEventListener('DOMContentLoaded', function() {
+ //         // seleziona tutti gli star-box quindi seleziona tutti i libri
+ //         const starContainers = document.querySelectorAll('.star-box');
+ //         // itera su ogni starbox, quindi su ogni libro
+ //         starContainers.forEach((container, containerIndex) => {
+ //             // Seleziona solo le stelle all'interno del contenitore corrente
+ //             const stars = container.querySelectorAll('.star');
+ //             // itera sulle stelle del contenitore corrente
+ //             stars.forEach((star, starIndex) => {
+ //                 // prendi il valore di dataset di initialStar
+ //                 const valueInStar = parseInt(star.dataset.initialStar);
+ //                 // controlla se l'indice di iterazione è < del valore delle stelle init e metti la classe gold
+ //                 if (!isNaN(valueInStar) && starIndex < valueInStar) {
+ //                     star.classList.add('gold');
+ //                 }
+ //             });
+ //         });
+
+ //      starContainers.forEach((container, containerIndex) => {
+ //          container.querySelectorAll('.star').forEach((star) => {
+ //              // Aggiungi un listener per l'evento click su ogni stella
+ //              star.addEventListener('click', function() {
+ //                  // Recupera l'indice della stella e del contenitore
+ //                  const starIndex = parseInt(star.dataset.starIndex);
+ //                  const containerIndex = parseInt(container.dataset.index);
+ //                  // Aggiorna dinamicamente il colore delle stelle
+ //                  updateStarsColor(starContainers, containerIndex, starIndex);
+ //              });
+ //          });
+ //      });
+
+ //      // Funzione per aggiornare dinamicamente il colore delle stelle
+ //      function updateStarsColor(containers, containerIndex, selectedStarIndex) {
+ //          const container = containers[containerIndex];
+ //          const stars = container.querySelectorAll('.star');
+
+ //          stars.forEach((star, starIndex) => {
+ //              if (starIndex <= selectedStarIndex) {
+ //                  star.classList.add('gold');
+ //              } else {
+ //                  star.classList.remove('gold');
+ //              }
+ //          });
+ //      }
+ //  }); -->
+
 </html>
+
+
+
+
+

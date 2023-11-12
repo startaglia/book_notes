@@ -72,7 +72,8 @@ app.post("/user", async (req, res) => {
     const users = (await getAllUsersData()).rows;
     const userId = req.body.user;
     const clickedUser = (await getClickedUser(userId)).rows;
-
+    const stars = await db.query(
+        "SELECT stars FROM books WHERE user_id = $1", [userId]);
     if(req.body.add == "new"){
         res.redirect("/add_user");
     } else if (req.body.remove == "cancel") {
@@ -83,16 +84,41 @@ app.post("/user", async (req, res) => {
     else {
         try {
             const result = await db.query(
-                "SELECT * FROM books WHERE user_id = $1", [userId]
+                "SELECT * FROM books WHERE user_id = $1 ORDER BY id ASC", [userId]
                 );
                 res.render("user.ejs", {
                     user:       clickedUser,
-                    books:      result.rows,
                     id:         userId,
+                    books:      result.rows,
+                    stars:      stars.rows,
                 })
         } catch (err) {
             console.log(err)
         }
+    }
+});
+
+app.post("/rating", async (req, res) =>{
+    const newStars = req.body.stars;
+    const userId = req.body.id;
+    const bookId = req.body.bookid;
+    console.log(bookId);
+    const clickedUser = (await getClickedUser(userId)).rows;
+    try {
+        await db.query(
+            "UPDATE books SET stars = $1, last_modified = CURRENT_TIMESTAMP WHERE user_id = $2 AND id = $3", [newStars, userId, bookId]);
+        const stars = await db.query(
+            "SELECT stars FROM books WHERE user_id = $1", [userId]);
+        const books = await db.query(
+            "SELECT * FROM books WHERE user_id = $1 ORDER BY last_modified DESC", [userId]);
+        res.render("user.ejs", {
+            user:       clickedUser,
+            id:         userId,
+            books:      books.rows,
+            stars:      stars.rows,
+        });
+    } catch (err) {
+        console.log(err);
     }
 });
 

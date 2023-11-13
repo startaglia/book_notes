@@ -30,7 +30,8 @@ const genres = [
     "Classics",
     "Sci-Fi",
     "Thriller",
-    "Fantasy"
+    "Fantasy",
+    "Other"
   ];
 
 app.get("/", async (req, res) => {
@@ -135,10 +136,7 @@ app.post("/genre", async (req, res) => {
     const bookId = req.body.bookid;
     const genre = req.body.genre;
     let books;
-    console.log(genre);
     const clickedUser = (await getClickedUser(userId)).rows;
-    console.log(userId);
-
     try {
         await db.query(
             "UPDATE books SET stars = $1, last_modified = CURRENT_TIMESTAMP WHERE user_id = $2 AND id = $3", [newStars, userId, bookId]);
@@ -163,8 +161,37 @@ app.post("/genre", async (req, res) => {
 })
 
 app.post("/add_book", async (req, res) => {
-    const genres = req.body.genres;
+    const userId = req.body.userId;
+    // Recupera i dati dal corpo della richiesta
+    const title = req.body.title;
+    const genre = req.body.genre; // genres sarà un array se sono selezionati più generi
+    const startDate = req.body.startDate;
+    const todayStart = req.body.todayStart === 'on'; // true se la checkbox è selezionata
+    const isFinish = req.body.isFinish === 'on'; // true se la checkbox è selezionata
+
+    // Se la checkbox "Book finished" è selezionata, recupera anche i dati di fine
+    let endDate, todayEnd;
+    if (isFinish) {
+        endDate = req.body.endDate;
+        todayEnd = req.body.todayEnd === 'on'; // true se la checkbox è selezionata
+    }
+
+    // Esegui le azioni desiderate con i dati ricevuti dal form
+
+    // Ad esempio, puoi stamparli sulla console per verificare il corretto funzionamento
+    console.log('Title:', title);
+    console.log('Genres:', genre);
+    console.log('Start Date:', startDate);
+    console.log('Today Start:', todayStart);
+    console.log('Is Finish:', isFinish);
+
+    if (isFinish) {
+        console.log('End Date:', endDate);
+        console.log('Today End:', todayEnd);
+    }
+
     res.render("add_book.ejs", {
+        id:          userId,
         genres:      genres,
     });
 });

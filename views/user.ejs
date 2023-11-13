@@ -27,16 +27,15 @@
 }
 </style>
 <body style="background-color: cornflowerblue;">
+    <% if (locals.user) {%>
     <div class="d-flex flex-column justify-content-center align-items-center container-fluid mt-5">
         <div class="d-flex justify-content-between w-100 px-3">
             <a href="/" class="btn btn-secondary"> &larr; Back </a>
             <form action="/add_book" method="post">
-                <%- console.log(genres)%>
-                <input type="hidden" name="genre" value="<%= genres %>">
+                <input type="hidden" name="userId" value="<%= user[0].id %>">
                 <button type="submit" class="btn btn-primary" name="add" value="new"> Add book</button>
             </form>
         </div>
-        <% if (locals.user) {%>
             <h2>Genres: </h2>
             <div class="d-inline mb-5">
                 <% genres.forEach(genre => { %>

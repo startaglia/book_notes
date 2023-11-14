@@ -47,7 +47,8 @@ input[type="radio"] {
   input[type="radio"]:checked + label .pink {
     border: 2px solid #851554;
   }
-  label {
+
+  .cust-label {
     display: inline-block;
     width: 25px;
     height: 25px;
@@ -91,5 +92,8 @@ input[type="radio"] {
     background: #a333c8;
   }
   label span.pink {
+    background: #e03997;
+  }
+  label span.button {
     background: #e03997;
   }

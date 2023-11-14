@@ -8,6 +8,7 @@
     }
 </style>
 <body style="background-color: darkslateblue;">
+
     <div class="d-flex flex-column align-items-center justify-content-center vh-100">
         <h1>Add new book</h1>
         <div class="w-50 mb-5 text-center">
@@ -16,12 +17,16 @@
                     <h2 class="me-3">Title: </h2>
                     <input class="form-control form-control-sm " type="text" aria-label="title input" name="title" value="" required>
                 </div>
-                <div class="d-flex flex-wrap ">
+
+
+                <div class="d-flex flex-wrap">
                     <h2 class="me-3">Genre:</h2>
-                    <% genres.forEach(genre => { %>
-                        <button type="button" class="btn btn-info me-3 mb-3" data-toggle="button" aria-pressed="false" autocomplete="off" name="genre" value="<%= genre %>"> <%= genre %></button>
+                    <% genres.forEach((genre, i) => { %>
+                        <input type="radio" id="genre<%= i %>" name="genre" value="<%= genre %>"/>
+                        <label for="genre<%= i %>"><span class="btn btn-primary"><%= genre %> </span></label>
                     <% }) %>
                 </div>
+
                 <div class="d-flex align-items-center flex-wrap mb-3">
                     <h2 class="me-3">Start Date: </h2>
                         <input class="form-control w-auto me-4" type="date" name="startDate" value="" aria-label="Date input for start reading">

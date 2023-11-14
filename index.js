@@ -164,31 +164,26 @@ app.post("/add_book", async (req, res) => {
     const userId = req.body.userId;
     // Recupera i dati dal corpo della richiesta
     const title = req.body.title;
-    const genre = req.body.genre; // genres sarà un array se sono selezionati più generi
+
     const startDate = req.body.startDate;
-    const todayStart = req.body.todayStart === 'on'; // true se la checkbox è selezionata
-    const isFinish = req.body.isFinish === 'on'; // true se la checkbox è selezionata
-
-    // Se la checkbox "Book finished" è selezionata, recupera anche i dati di fine
-    let endDate, todayEnd;
-    if (isFinish) {
-        endDate = req.body.endDate;
-        todayEnd = req.body.todayEnd === 'on'; // true se la checkbox è selezionata
-    }
-
+    const todayStart = req.body.todayStart; // true se la checkbox è selezionata
+    const isFinish = req.body.isFinish;
+    let endDate = (isFinish === 'isFinish') ? req.body.endDate : undefined;
+    let todayEnd = (isFinish === 'isFinish') ? req.body.todayEnd : undefined;
     // Esegui le azioni desiderate con i dati ricevuti dal form
-
     // Ad esempio, puoi stamparli sulla console per verificare il corretto funzionamento
     console.log('Title:', title);
-    console.log('Genres:', genre);
+    const genreValue = req.body.genre;
+    console.log('Genre Value:', genreValue);
+    // console.log('Genres:', genre);
     console.log('Start Date:', startDate);
     console.log('Today Start:', todayStart);
     console.log('Is Finish:', isFinish);
 
-    if (isFinish) {
+    // if (isFinish) {
         console.log('End Date:', endDate);
         console.log('Today End:', todayEnd);
-    }
+    // }
 
     res.render("add_book.ejs", {
         id:          userId,

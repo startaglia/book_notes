@@ -6,17 +6,9 @@
         <div class="p-5">
             <h2>form per cambio e add user</h2>
 
-            <input type="radio" id="html" name="fav_language" value="HTML">
-            <label for="html">HTML</label><br>
-            <input type="radio" id="css" name="rere" value="CSS">
-            <label for="css">CSS</label><br>
-
-
-
-
                 <form action="/user" method="post">
                 <% users.forEach(user => { %>
-                    <button type="submit" class="btn" name="user" value="<%= (user.id)%>" id="<%= (user.id)%>" style="background-color: <%= user.color%>">
+                    <button type="submit" class="btn" name="userId" value="<%= (user.id)%>" id="<%= (user.id)%>" style="background-color: <%= user.color%>">
                         <%= user.name %>
                     </button>
                     <% }); %>

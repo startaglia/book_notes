@@ -27,12 +27,13 @@
 }
 </style>
 <body style="background-color: cornflowerblue;">
-    <% if (locals.user) {%>
     <div class="d-flex flex-column justify-content-center align-items-center container-fluid mt-5">
+        <% if (locals.id) {%>
         <div class="d-flex justify-content-between w-100 px-3">
             <a href="/" class="btn btn-secondary"> &larr; Back </a>
             <form action="/add_book" method="post">
-                <input type="hidden" name="userId" value="<%= user[0].id %>">
+                <input type="hidden" name="userId" value="<%= id %>">
+                <input type="hidden" name="mode" value= 1 >
                 <button type="submit" class="btn btn-primary" name="add" value="new"> Add book</button>
             </form>
         </div>
@@ -40,31 +41,28 @@
             <div class="d-inline mb-5">
                 <% genres.forEach(genre => { %>
                     <form action="/genre" method="post" class="d-inline">
-                        <input type="hidden" name="id" value="<%= user[0].id %>">
+                        <input type="hidden" name="id" value="<%= id %>">
                         <button type="submit" class="btn btn-secondary" name="genre" value="<%= genre %>"> <%= genre %></button>
                     </form>
                     <% }) %>
                 </div>
-            <h1 class="mb-2">Books read by <%= user[0].name%> </h1>
+            <h1 class="mb-2">Books read by <%= name%> </h1>
             <% books.forEach((book, indx) => { %>
                 <div class="text-center mb-5 w-50">
-                    <h2><%= book.name %> <span class="d-block fs-6">Data</span></h2>
+                    <h2><%= book.title %> <span class="d-block fs-6"><%= book.start_date %> - <%= book.author%> %></span> </h2>
                     <div class="float-md-start mr-3 me-3 mt-4">
                         <img src="https://picsum.photos/200/300" class="" alt="book cover img" style="width: 150px; height: 200px;">
                         <div class="star-box" data-index="<%= indx %>">
                             <% for(let i = 0; i < 5; i++ ) { %>
                                 <form action="/rating" method="post" class="d-inline">
-                                    <input type="hidden" name="id" value="<%= user[0].id %>">
+                                    <input type="hidden" name="id" value="<%= id %>">
                                     <input type="hidden" name="bookid" value="<%= book.id %>">
-
                                     <button type="submit" class="star no-style" name="stars" value= "<%= i + 1 %>" data-star-index="<%= i %>" data-initial-star="<%= book.stars %>">&#9733;</button>
                                 </form>
                             <% } %>
                         </div>
                     </div>
-                    <p>
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis expedita iusto libero temporibus voluptatum inventore nam unde laborum labore commodi, veritatis iure fuga modi dicta porro adipisci quos totam quo?Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti sunt voluptatum soluta quos pariatur tempore, similique voluptatem excepturi veniam vel deserunt sint voluptatibus hic voluptate, aliquam rem! Illum, impedit non. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Minus perspiciatis voluptatem et dignissimos, necessitatibus quidem tempore tenetur ullam minima cupiditate nulla, quam dolor! Dolore ipsa id quibusdam nisi, similique ratione. Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempora, cum. Sed temporibus magni, ut facere pariatur accusantium placeat error ratione rerum iste aliquid. Nisi dignissimos eius quod porro unde accusamus!
-                    </p>
+                    <p> <%= book.review %> </p>
                 </div>
             <% }) %>
         <% } %>

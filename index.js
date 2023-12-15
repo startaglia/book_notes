@@ -76,87 +76,6 @@ app.post("/remove_user", async (req, res) => {
 app.get("/user", async (req, res) => {
     res.render("user.ejs");
 });
-app.post("/test", async(req, res) => {
-    const userId = req.body.userId;
-    const clickedUser = (await getClickedUser(userId)).rows;
-    const title = req.body.title;
-    const author = req.body.author;
-    const genreValue = req.body.genre;
-    const startDate = req.body.startDate;
-    const todayStart = req.body.todayStart;
-    const isFinish = req.body.isFinish;
-    const bookReview = req.body.bookReview;
-    let endDate = (isFinish === 'isFinish') ? req.body.endDate : undefined;
-    let todayEnd = (isFinish === 'isFinish') ? req.body.todayEnd : undefined;
-    console.log('userId', userId)
-    console.log('Title:', title);
-    console.log('Author:', author);
-    console.log('Genre Value:', genreValue);
-    console.log('Start Date:', startDate);
-    console.log('Is Finish:', isFinish);
-    console.log('Today Start:', todayStart);
-    console.log('End Date:', endDate);
-    console.log('Today End:', todayEnd);
-    console.log('Book Review:', bookReview);
-    console.log('*****');
-
-    if (userId && title && author && genreValue && startDate && !isFinish){
-        console.log("I VALORI SONO: ")
-        console.log('Title:', title);
-        console.log('Author:', author);
-        console.log('Genre Value:', genreValue);
-        console.log('Start Date:', startDate);
-        console.log('Today Start:', todayStart);
-        console.log('Is Finish:', isFinish);
-        console.log('End Date:', endDate);
-        console.log('Today End:', todayEnd);
-        console.log('Book Review:', bookReview);
-        try {
-            await db.query (
-                "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, author)" +
-                "VALUES($1, $2, $3, CASE WHEN $4 = 1 THEN NOW() ELSE $5 END, NOW(), NOW(), $6)",
-                    [userId, title, genreValue, todayStart, startDate, author]);
-            res.render("user.ejs", {
-                name:           clickedUser[0].name,
-                id:             userId,
-                title :         title,
-                author:         author,
-                genres:         genres,
-                genreValue:     genreValue,
-                startDate:      startDate,
-                todayStart:     todayStart
-            });
-        } catch (error) {
-            console.log(err);
-        }
-    }
-    else if(userId && title && genreValue && startDate && author && endDate && review && isFinish){
-        try {
-            await db.query (
-                "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, author)" +
-                "VALUES($1, $2, $3, CASE WHEN $4 = 1 THEN NOW() ELSE $5 END, NOW(), NOW(), CASE WHEN $6 = 1 THEN NOW() ELSE $7, $8, $9)",
-                    [userId, title, genreValue, todayStart, startDate, isFinish, endDate, review, author]);
-            res.render("user.ejs", {
-                id:             userId,
-                genres:         genres,
-                title :         title,
-                genreValue:     genreValue,
-                startDate:      startDate,
-                todayStart:     todayStart
-            });
-        } catch (error) {
-            console.log(err);
-        }
-    }
-    res.render("add_book.ejs", {
-        id:             userId,
-        genres:         genres,
-        // title :         title,
-        // genreValue:     genreValue,
-        // startDate:      startDate,
-        // todayStart:     todayStart
-    });
-})
 app.post("/user", async (req, res) => {
     const mode = req.body.mode;
     // const userId = req.body.user;
@@ -184,8 +103,23 @@ app.post("/user", async (req, res) => {
             users:      users,
         });
     }
+    console.log("PROVA: ")
+        console.log('Title:', title);
+        console.log('Author:', author);
+        console.log('Genre Value:', genreValue);
+        console.log('Start Date:', startDate);
+        console.log('Today Start:', todayStart);
+        console.log('Is Finish:', isFinish);
+        console.log('End Date:', endDate);
+        console.log('Today End:', todayEnd);
+        console.log('Book Review:', bookReview);
 
-    if (userId && title && author && genreValue && startDate && !isFinish){
+        if (todayStart === 1) {
+            startDate = undefined;
+        }
+        console.log('GEGGE--> ', startDate);
+
+    if (userId && title && author && genreValue && (startDate || todayStart) && !isFinish) {
         console.log("I VALORI SONO: ")
         console.log('Title:', title);
         console.log('Author:', author);
@@ -202,9 +136,8 @@ app.post("/user", async (req, res) => {
         const books = await db.query(
             "SELECT * FROM books WHERE user_id = $1  ORDER BY last_modified DESC", [userId]
         );
-        console.log("LIBRI--> ", books.rows[0])
-        console.log("STELLE--> ", stars.rows[0])
         try {
+            if (startDate) {
             await db.query (
                 "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, author)" +
                 "VALUES($1, $2, $3, CASE WHEN $4 = 1 THEN NOW() ELSE $5 END, NOW(), NOW(), $6)",
@@ -221,7 +154,26 @@ app.post("/user", async (req, res) => {
                 books:          books.rows,
                 stars:          stars.rows,
             });
-        } catch (error) {
+        } else {
+            console.log("SONO QUI")
+            await db.query (
+                "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, author)" +
+                "VALUES($1, $2, $3, NOW(), NOW(), NOW(), $4)",
+                    [userId, title, genreValue, author]);
+            res.render("user.ejs", {
+                name:           clickedUser[0].name,
+                id:             userId,
+                title :         title,
+                author:         author,
+                genres:         genres,
+                genreValue:     genreValue,
+                startDate:      startDate,
+                todayStart:     todayStart,
+                books:          books.rows,
+                stars:          stars.rows,
+            });
+        }
+        } catch (err) {
             console.log(err);
         }
     }

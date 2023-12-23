@@ -31,9 +31,9 @@
         <% if (locals.id) {%>
         <div class="d-flex justify-content-between w-100 px-3">
             <a href="/" class="btn btn-secondary"> &larr; Back </a>
-            <form action="/add_book" method="post">
+            <form action="/book_page" method="post">
                 <input type="hidden" name="userId" value="<%= id %>">
-                <input type="hidden" name="mode" value= 1 >
+                <input type="hidden" name="add" value= 1 >
                 <button type="submit" class="btn btn-primary" name="add" value="new"> Add book</button>
             </form>
         </div>
@@ -47,9 +47,19 @@
                     <% }) %>
                 </div>
             <h1 class="mb-2">Books read by <%= name%> </h1>
-            <% books.forEach((book, indx) => { %>
+            <%
+            function formatDate(dateString) {
+              const date = new Date(dateString);
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, '0');
+              const day = String(date.getDate()).padStart(2, '0');
+              return `${year}-${month}-${day}`;
+            }
+            %>
+
+              <% books.forEach((book, indx) => { %>
                 <div class="text-center mb-5 w-50">
-                    <h2><%= book.title %> <span class="d-block fs-6"><%= book.start_date %> - <%= book.author%> %></span> </h2>
+                  <h2><%= book.title %> - <%= book.author%></h2>
                     <div class="float-md-start mr-3 me-3 mt-4">
                         <img src="https://picsum.photos/200/300" class="" alt="book cover img" style="width: 150px; height: 200px;">
                         <div class="star-box" data-index="<%= indx %>">
@@ -62,7 +72,38 @@
                             <% } %>
                         </div>
                     </div>
+                    <div class="text-center mt-5">
+                        <% if (book.finish_date) {%>
+                            <h2 class="fs-6">start date: <%= formatDate(book.start_date) %> end date: <%= formatDate(book.finish_date) %> </h2>
+                        <% }else {%>
+                            <h2 class="fs-6">start date: <%= formatDate(book.start_date) %></h2>
+                        <% } %>
+                    </div>
                     <p> <%= book.review %> </p>
+                    <div class="d-flex justify-content-around mt-3">
+                        <!-- Bottone per la modifica -->
+                        <form action="/book_page" method="post" class="d-inline">
+                            <input type="hidden" name="userId" value="<%= id %>">
+                            <input type="hidden" name="bookId" value="<%= book.id %>">
+                            <input type="hidden" name="title" value="<%= book.title %>">
+                            <input type="hidden" name="author" value="<%= book.author %>">
+                            <input type="hidden" name="genre" value="<%= book.genre %>">
+                            <input type="hidden" name="startDate" value="<%= formatDate(book.start_date) %>">
+                            <input type="hidden" name="todayStart" value="<%= book.todayStart %>">
+                            <input type="hidden" name="endDate" value="<%= formatDate(book.finish_date) %>">
+                            <input type="hidden" name="todayEnd" value="<%= book.todayEnd %>">
+                            <input type="hidden" name="review" value="<%= book.review %>">
+                            <input type="hidden" name="modify" value="1">
+                            <button type="submit" class="btn btn-warning">Modify</button>
+                        </form>
+
+                        <!-- Bottone per la cancellazione -->
+                        <form action="/delete" method="post" class="d-inline">
+                            <input type="hidden" name="userId" value="<%= id %>">
+                            <input type="hidden" name="bookId" value="<%= book.id %>">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
                 </div>
             <% }) %>
         <% } %>
@@ -108,52 +149,6 @@
     }
 });
  </script>
- <!-- //     // evento che inizia quando il DOM ha finito di caricare tutto
- //     document.addEventListener('DOMContentLoaded', function() {
- //         // seleziona tutti gli star-box quindi seleziona tutti i libri
- //         const starContainers = document.querySelectorAll('.star-box');
- //         // itera su ogni starbox, quindi su ogni libro
- //         starContainers.forEach((container, containerIndex) => {
- //             // Seleziona solo le stelle all'interno del contenitore corrente
- //             const stars = container.querySelectorAll('.star');
- //             // itera sulle stelle del contenitore corrente
- //             stars.forEach((star, starIndex) => {
- //                 // prendi il valore di dataset di initialStar
- //                 const valueInStar = parseInt(star.dataset.initialStar);
- //                 // controlla se l'indice di iterazione è < del valore delle stelle init e metti la classe gold
- //                 if (!isNaN(valueInStar) && starIndex < valueInStar) {
- //                     star.classList.add('gold');
- //                 }
- //             });
- //         });
-
- //      starContainers.forEach((container, containerIndex) => {
- //          container.querySelectorAll('.star').forEach((star) => {
- //              // Aggiungi un listener per l'evento click su ogni stella
- //              star.addEventListener('click', function() {
- //                  // Recupera l'indice della stella e del contenitore
- //                  const starIndex = parseInt(star.dataset.starIndex);
- //                  const containerIndex = parseInt(container.dataset.index);
- //                  // Aggiorna dinamicamente il colore delle stelle
- //                  updateStarsColor(starContainers, containerIndex, starIndex);
- //              });
- //          });
- //      });
-
- //      // Funzione per aggiornare dinamicamente il colore delle stelle
- //      function updateStarsColor(containers, containerIndex, selectedStarIndex) {
- //          const container = containers[containerIndex];
- //          const stars = container.querySelectorAll('.star');
-
- //          stars.forEach((star, starIndex) => {
- //              if (starIndex <= selectedStarIndex) {
- //                  star.classList.add('gold');
- //              } else {
- //                  star.classList.remove('gold');
- //              }
- //          });
- //      }
- //  }); -->
 
 </html>
 

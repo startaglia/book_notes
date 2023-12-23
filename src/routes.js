@@ -1,4 +1,4 @@
-import { getAllUsersData, getClickedUser } from "./dataAccess.js"
+import { getAllUsersData, getClickedUser, getBookData } from "./dataAccess.js"
 import { db } from "./db.js"
 import { genres } from "./index.js"
 import { log } from "./utils.js"
@@ -45,15 +45,10 @@ async function configureRoutes(db, app) {
         res.render("user.ejs");
     });
     app.post("/user", async (req, res) => {
-        const { mode, userId, title, author, genreValue, startDate, todayStart, isFinish, bookReview } = req.body;
+        const { userId, title, author, genre, startDate, todayStart, isFinish, bookReview, modify } = req.body;
         const clickedUser = (await getClickedUser(userId)).rows;
-        let endDate = (isFinish === 'isFinish') ? req.body.endDate : undefined;
-        let todayEnd = (isFinish === 'isFinish') ? req.body.todayEnd : undefined;
-        const review = await db.query(
-            "SELECT review FROM books WHERE user_id = $1", [userId]);
-        const stars = await db.query(
-            "SELECT stars FROM books WHERE user_id = $1", [userId]);
-
+        let endDate = (isFinish) ? req.body.endDate : undefined;
+        let todayEnd = (isFinish) ? req.body.todayEnd : undefined;
         if(req.body.add == "new"){
             res.redirect("/add_user");
         } else if (req.body.remove == "cancel") {
@@ -61,97 +56,86 @@ async function configureRoutes(db, app) {
             res.render("remove.ejs", { users: users });
         }
         if (todayStart === 1) startDate = undefined;
-
+        if (todayEnd === 1) endDate = undefined;
         // CASO IN CUI IL LIBRO NON È ANCORA STATO FINITO
-        if (userId && title && author && genreValue && (startDate || todayStart) && !isFinish) {
-            // const stars = await db.query(
-            //     "SELECT stars FROM books WHERE user_id = $1", [userId]);
-            const books = await db.query(
-                "SELECT * FROM books WHERE user_id = $1  ORDER BY last_modified DESC", [userId]
-            );
+        if (userId && title && author && genre && (startDate || todayStart) && !isFinish) {
             try {
                 if (startDate) {
-                    log('blue', userId, title, genreValue, todayStart, startDate, author)
                 await db.query (
                     "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, author)" +
-                    "VALUES($1, $2, $3, CASE WHEN $4 = 1 THEN NOW() ELSE $5 END, NOW(), NOW(), $6)",
-                        [userId, title, genreValue, todayStart, startDate, author]);
+                    "VALUES($1, $2, $3, $4, NOW(), NOW(), $5)",
+                        [userId, title, genre, startDate, author]);
+                } else {
+                    await db.query (
+                        "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, author)" +
+                        "VALUES($1, $2, $3, NOW(), NOW(), NOW(), $4)",
+                            [userId, title, genre, author]);
+                }
+                const books = await db.query(
+                    "SELECT * FROM books WHERE user_id = $1  ORDER BY last_modified DESC", [userId]
+                );
                 res.render("user.ejs", {
                     name:           clickedUser[0].name,
                     id:             userId,
-                    title :         title,
-                    author:         author,
                     genres:         genres,
-                    genreValue:     genreValue,
-                    startDate:      startDate,
-                    todayStart:     todayStart,
                     books:          books.rows,
-                    stars:          stars.rows,
                 });
-            } else {
-                await db.query (
-                    "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, author)" +
-                    "VALUES($1, $2, $3, NOW(), NOW(), NOW(), $4)",
-                        [userId, title, genreValue, author]);
-                res.render("user.ejs", {
-                    name:           clickedUser[0].name,
-                    id:             userId,
-                    title :         title,
-                    author:         author,
-                    genres:         genres,
-                    genreValue:     genreValue,
-                    startDate:      startDate,
-                    todayStart:     todayStart,
-                    books:          books.rows,
-                    stars:          stars.rows,
-                });
-            }
             } catch (err) {
-                log('red', err)
+                log.red(err)
             }
         }
         // CASO IN CUI IL LIBRO È STATO FINITO
-        else if(userId && title && genreValue && startDate && author && endDate && review && isFinish){
+        else if(userId && title && author && genre && (startDate || todayStart) && isFinish && (endDate || todayEnd) && bookReview){
             try {
-                await db.query (
-                    "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, author)" +
-                    "VALUES($1, $2, $3, CASE WHEN $4 = 1 THEN NOW() ELSE $5 END, NOW(), NOW(), CASE WHEN $6 = 1 THEN NOW() ELSE $7, $8, $9)",
-                        [userId, title, genreValue, todayStart, startDate, isFinish, endDate, review, author]);
+                if (endDate && !todayStart) {
+                    await db.query(
+                        "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, finish_date, review, author)" +
+                        "VALUES($1, $2, $3, $4, NOW(), NOW(), $5, $6, $7)",
+                        [userId, title, genre, startDate, endDate, bookReview, author]
+                    );
+                } else if (endDate && todayStart) {
+                    await db.query(
+                        "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, finish_date, review, author)" +
+                        "VALUES($1, $2, $3, NOW(), NOW(), NOW(), $5, $6, $7)",
+                        [userId, title, genre, endDate, bookReview, author]
+                    );
+                } else if(!endDate && !todayStart) {
+                    await db.query (
+                        "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, finish_date, review, author)" +
+                        "VALUES($1, $2, $3, $4, NOW(), NOW(), NOW(), $5, $6)",
+                            [userId, title, genre, startDate, bookReview, author]);
+                } else if (!endDate && todayStart) {
+                    await db.query(
+                        "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, finish_date, review, author)" +
+                        "VALUES($1, $2, $3, NOW(), NOW(), NOW(), NOW(), $4, $5)",
+                        [userId, title, genre, bookReview, author]);
+                }
+                const books = await db.query(
+                    "SELECT * FROM books WHERE user_id = $1 ORDER BY last_modified DESC", [userId]
+                );
                 res.render("user.ejs", {
+                    name:           clickedUser[0].name,
                     id:             userId,
                     genres:         genres,
-                    title :         title,
-                    genreValue:     genreValue,
-                    startDate:      startDate,
-                    todayStart:     todayStart
+                    books:          books.rows,
                 });
-            } catch (error) {
-                log('bgRed', err)
+            } catch (err) {
+                log.red(err)
             }
-        }
-        else if (mode) {
-            res.render("add_book.ejs", {
-                id:             userId,
-                genres:         genres,
-            });
         }
         else {
             try {
                 const books = await db.query(
                     "SELECT * FROM books WHERE user_id = $1  ORDER BY last_modified DESC", [userId]
                     );
-
-
-                    res.render("user.ejs", {
-                        name:       clickedUser[0].name,
-                        id:         userId,
-                        books:      books.rows,
-                        review:     review.rows,
-                        stars:      stars.rows,
-                        genres:     genres,
-                    })
+                res.render("user.ejs", {
+                    name:       clickedUser[0].name,
+                    id:         userId,
+                    books:      books.rows,
+                    genres:     genres,
+                })
             } catch (err) {
-                log('red', err)
+                log.red(err)
             }
         }
     });
@@ -164,16 +148,12 @@ async function configureRoutes(db, app) {
         try {
             await db.query(
                 "UPDATE books SET stars = $1, last_modified = CURRENT_TIMESTAMP WHERE user_id = $2 AND id = $3", [newStars, userId, bookId]);
-            const stars = await db.query(
-                "SELECT stars FROM books WHERE user_id = $1", [userId]);
             const books = await db.query(
                 "SELECT * FROM books WHERE user_id = $1 ORDER BY last_modified DESC", [userId]);
             res.render("user.ejs", {
                 name:       clickedUser[0].name,
                 id:         userId,
                 books:      books.rows,
-                review:     review.rows,
-                stars:      stars.rows,
                 genres:     genres,
             });
         } catch (err) {
@@ -204,7 +184,6 @@ async function configureRoutes(db, app) {
                 name:       clickedUser[0].name,
                 id:         clickedUser[0].id,
                 books:      books.rows,
-                stars:      stars.rows,
                 genres:     genres,
             });
         } catch (err) {
@@ -212,92 +191,45 @@ async function configureRoutes(db, app) {
         }
     })
 
-    app.post("/add_book", async (req, res) => {
-        const userId = req.body.userId;
+    app.post("/book_page", async (req, res) => {
+        const { userId, bookId, modify } = req.body;
         const clickedUser = (await getClickedUser(userId)).rows;
-        const title = req.body.title;
-        const author = req.body.author;
-        const genreValue = req.body.genre;
-        const startDate = req.body.startDate;
-        const todayStart = req.body.todayStart;
-        const isFinish = req.body.isFinish;
-        const bookReview = req.body.bookReview;
-        let endDate = (isFinish === 'isFinish') ? req.body.endDate : undefined;
-        let todayEnd = (isFinish === 'isFinish') ? req.body.todayEnd : undefined;
-        console.log('userId', userId)
-        console.log('Title:', title);
-        console.log('Author:', author);
-        console.log('Genre Value:', genreValue);
-        console.log('Start Date:', startDate);
-        console.log('Is Finish:', isFinish);
-        console.log('Today Start:', todayStart);
-        console.log('End Date:', endDate);
-        console.log('Today End:', todayEnd);
-        console.log('Book Review:', bookReview);
-        console.log('*****');
-        if (userId && title && author && genreValue && startDate && !isFinish){
-            console.log("I VALORI SONO: ")
-            console.log('Title:', title);
-            console.log('Author:', author);
-            console.log('Genre Value:', genreValue);
-            console.log('Start Date:', startDate);
-            console.log('Today Start:', todayStart);
-            console.log('Is Finish:', isFinish);
-            console.log('End Date:', endDate);
-            console.log('Today End:', todayEnd);
-            console.log('Book Review:', bookReview);
-            console.log("SASDSA")
-            const stars = await db.query(
-                "SELECT stars FROM books WHERE user_id = $1", [userId]);
-            const books = await db.query(
-                "SELECT * FROM books WHERE user_id = $1  ORDER BY last_modified DESC", [userId]
-            );
-            console.log("LIBRI--> ", books.rows)
-            console.log("STELLE--> ", stars.rows)
+        if (modify) {
+            log.yellow("MODIFY", modify)
+
+            const { title, author, genre, startDate, endDate, review } = req.body;
+            log.purple(title, author, genre, startDate, endDate, review, bookId)
             try {
-                await db.query (
-                    "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, author)" +
-                    "VALUES($1, $2, $3, CASE WHEN $4 = 1 THEN NOW() ELSE $5 END, NOW(), NOW(), $6)",
-                        [userId, title, genreValue, todayStart, startDate, author]);
-                res.render("user.ejs", {
+                await db.query("UPDATE books SET title = $1, author = $2, genre = $3, start_date = $4, finish_date = $5, review = $6 WHERE id = $7", [title, author, genre, startDate, endDate, review, bookId]);
+                 const books = await db.query(
+                "SELECT * FROM books WHERE user_id = $1 ORDER BY last_modified DESC", [userId]);
+                res.render("book_page.ejs", {
                     name:           clickedUser[0].name,
                     id:             userId,
-                    title :         title,
+                    books:          books.rows,
+                    title:          title,
                     author:         author,
                     genres:         genres,
-                    genreValue:     genreValue,
+                    clickedGenre:   genre,
                     startDate:      startDate,
-                    todayStart:     todayStart,
-                    books:          books.rows,
-                    stars:          stars.rows,
+                    endDate:        endDate,
+                    review:         review,
+                    modify:         modify
                 });
-            } catch (error) {
+            } catch (err) {
                 console.log(err);
             }
         }
-        else if(userId && title && genreValue && startDate && author && endDate && review && isFinish){
-            try {
-                await db.query (
-                    "INSERT INTO books (user_id, title, genre, start_date, created_at, last_modified, author)" +
-                    "VALUES($1, $2, $3, CASE WHEN $4 = 1 THEN NOW() ELSE $5 END, NOW(), NOW(), CASE WHEN $6 = 1 THEN NOW() ELSE $7, $8, $9)",
-                        [userId, title, genreValue, todayStart, startDate, isFinish, endDate, review, author]);
-                res.render("user.ejs", {
-                    id:             userId,
-                    genres:         genres,
-                    title :         title,
-                    genreValue:     genreValue,
-                    startDate:      startDate,
-                    todayStart:     todayStart
-                });
-            } catch (error) {
-                console.log(err);
-            }
+        else {
+            log.yellow("NON MODIFY", modify)
+            res.render("book_page.ejs", {
+                id:             userId,
+                genres:         genres,
+            });
         }
-        res.render("add_book.ejs", {
-            id:             userId,
-            genres:         genres,
-        });
     });
+
+
 }
 
 export { configureRoutes };

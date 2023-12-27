@@ -24,6 +24,15 @@
 <!-- SE MODIFY È TRUE TOGLIERE TUTTI I REQUIRED.
 È SBAGLIATA LA QUERY, NON MI MODIFICA UN LIBRO MA NE AGGIUNGE UN' ALTRO CON I PARAM MODIFICATI -->
 <body style="background-color: darkslateblue;">
+    <%
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    %>
     <div class="d-flex justify-content-between w-100 px-3">
         <form action="/user" method="post">
             <input type="hidden" name="userId" value="<%= id %>">
@@ -39,11 +48,11 @@
                     <div class="row">
                         <div class="d-flex align-items-center justify-content-center col-md-6">
                             <h2 class="me-3">Title: </h2>
-                            <input class="form-control form-control-sm" type="text" aria-label="title input" name="title"  value="<%= locals.modify ? title : '' %>"  required>
+                            <input class="form-control form-control-sm" type="text" aria-label="title input" name="title"  value="<%= locals.modify ? selectedBook.title : '' %>"  <%= locals.modify ? '' : 'required' %>>
                         </div>
                         <div class="d-flex align-items-center justify-content-center col-md-6">
                             <h2 class="me-3">Author: </h2>
-                            <input class="form-control form-control-sm" type="text" aria-label="title input" name="author" value="<%= locals.modify ? author : '' %>" required>
+                            <input class="form-control form-control-sm" type="text" aria-label="title input" name="author" value="<%= locals.modify ? selectedBook.author : '' %>" <%= locals.modify ? '' : 'required' %>>
                         </div>
                     </div>
                 </div>
@@ -52,7 +61,7 @@
                     <h2 class="me-3">Genre:</h2>
                     <% genres.forEach((genre, i) => { %>
                         <% if (i > 0) { %>
-                            <input type="radio"  id="genre<%= i %>" name="genre" value="<%= genre %>" required/>
+                            <input type="radio" id="genre<%= i %>" name="genre" value="<%= locals.modify ? clickedGenre : genre %>" <%= locals.modify ? 'checked' : '' %> <%= locals.modify ? '' : 'required' %>/>
                             <label for="genre<%= i %>" class="me-2"><span class="btn btn-primary"><%= genre %> </span></label>
                         <% } %>
                     <% }) %>
@@ -60,7 +69,7 @@
                 <!-- startDate -->
                 <div class="d-flex align-items-center flex-wrap mb-3">
                     <h2 class="me-3">Start Date: </h2>
-                    <input class="form-control w-auto me-4 mb-2" type="date" name="startDate" value="<%= locals.modify ? startDate : 1 %>" aria-label="Date input for start reading">
+                    <input class="form-control w-auto me-4 mb-2" type="date" name="startDate" value="<%= locals.modify ? formatDate(selectedBook.start_date) : 1 %>" aria-label="Date input for start reading">
                     <span class="fs-4 w-auto me-3">Today</span>
                     <input class="form-check-input mt-0 fs-4" type="checkbox" name="todayStart" value= "1" aria-label="Checkbox for today date flag">
                 </div>
@@ -75,17 +84,29 @@
                 <div id="collapseExample" class="collapse<%= !locals.modify ? '' : ' show' %>">
                     <div class="d-flex align-items-center flex-wrap mb-3">
                         <h2 class="me-3">End Date: </h2>
-                        <input class="form-control w-auto me-4" type="date" name="endDate" value="<%= locals.modify ? endDate : '' %>" aria-label="Date input for end reading">
+                        <input
+                            class="form-control w-auto me-4"
+                            type="date"
+                            name="endDate"
+                            value="<%= locals.modify && formatDate(selectedBook.finish_date) ? formatDate(selectedBook.finish_date) : '1' %>"
+                            aria-label="Date input for end reading"
+                        >
                         <span class="fs-4 w-auto me-3">Today</span>
                         <input class="form-check-input mt-0 fs-4 " type="checkbox" name="todayEnd" value="todayEnd" aria-label="Checkbox for today date flag">
                     </div>
                     <div class="d-flex align-items-center flex-wrap mb-3">
                         <h2 class="me-3">Book review: </h2>
-                        <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea2" name="bookReview" style="height: 150px"><%= locals.modify ? review : '' %></textarea>
+                        <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea2" name="bookReview" style="height: 150px"><%= locals.modify ? selectedBook.review : '' %></textarea>
                     </div>
                 </div>
                 <input type="hidden" name="userId" value="<%= id %>">
-                <button type="submit" class="btn btn-primary mx-auto"> <%= locals.modify ? 'Modify' : 'Add' %></button>
+                <input type="hidden" name="bookId" value="<%= locals.modify ? selectedBook.id : '' %>">
+                <button type="submit" class="btn btn-primary mx-auto">
+                    <%= locals.modify ? 'Modify' : 'Add' %>
+                </button>
+                <% if (locals.modify) { %>
+                    <input type="hidden" name="modify" value="1">
+                <% } %>
             </form>
         </div>
     </div>

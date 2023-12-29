@@ -157,10 +157,12 @@ async function configureRoutes(db, app) {
         }
         // CASO IN CUI VADO DA INDEX.EJS A USER.EJS
         else {
+
             try {
                 const books = await db.query(
                     "SELECT * FROM books WHERE user_id = $1  ORDER BY last_modified DESC", [userId]
                     );
+                log.blue(clickedUser[0].name)
                 res.render("user.ejs", {
                     name:       clickedUser[0].name,
                     id:         userId,
